@@ -1,19 +1,37 @@
 import { useState, useEffect, useRef } from "react";
+import { supabase } from "./lib/supabase";
 
 // ─── Admin credentials ────────────────────────────────────────────────────────
 const ADMIN_USERS = {
   "aniekaneazy@gmail.com":        "LTL@Admin2026",
   "ideallifecitymedia@gmail.com": "ILC@Admin2026",
 };
-const SUBMISSIONS_KEY = "ewaq_submissions";
 
-function saveSubmission(data) {
-  const all = JSON.parse(localStorage.getItem(SUBMISSIONS_KEY) || "[]");
-  all.unshift({ ...data, id: Date.now() });
-  localStorage.setItem(SUBMISSIONS_KEY, JSON.stringify(all));
+async function saveSubmission(data) {
+  const { error } = await supabase.from("submissions").insert({
+    name:       data.name,
+    email:      data.email,
+    avg:        data.avg,
+    total:      data.total,
+    s_a:        data.sA,
+    s_b:        data.sB,
+    s_c:        data.sC,
+    label:      data.label,
+    reflection: data.reflection || null,
+  });
+  if (error) console.error("Supabase insert error:", error.message);
 }
-function loadSubmissions() {
-  return JSON.parse(localStorage.getItem(SUBMISSIONS_KEY) || "[]");
+
+async function fetchSubmissions() {
+  const { data, error } = await supabase
+    .from("submissions")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) { console.error("Supabase fetch error:", error.message); return []; }
+  return (data || []).map(r => ({
+    ...r,
+    sA: r.s_a, sB: r.s_b, sC: r.s_c,
+  }));
 }
 
 // ─── Questions ────────────────────────────────────────────────────────────────
@@ -233,10 +251,20 @@ function AdminLogin({ onLogin, onBack }) {
 
 // ─── Admin Dashboard ──────────────────────────────────────────────────────────
 function AdminDashboard({ adminEmail, onLogout }) {
-  const [submissions, setSubmissions] = useState(loadSubmissions());
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading]         = useState(true);
   const [search, setSearch]           = useState("");
   const [selected, setSelected]       = useState(null);
   const [copied, setCopied]           = useState(null);
+
+  async function loadData() {
+    setLoading(true);
+    const rows = await fetchSubmissions();
+    setSubmissions(rows);
+    setLoading(false);
+  }
+
+  useEffect(() => { loadData(); }, []);
 
   const filtered = submissions.filter(s =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -306,17 +334,21 @@ function AdminDashboard({ adminEmail, onLogout }) {
           <button onClick={copyAllEmails} style={{ padding: "10px 18px", backgroundColor: "#fff", border: "1.5px solid #E2E4DF", borderRadius: "10px", fontSize: "13px", fontWeight: "500", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", color: "#374151", whiteSpace: "nowrap" }}>
             {copied === "all" ? "✓ Copied!" : `Copy All Emails (${filtered.length})`}
           </button>
-          <button onClick={() => setSubmissions(loadSubmissions())} style={{ padding: "10px 14px", backgroundColor: "#fff", border: "1.5px solid #E2E4DF", borderRadius: "10px", fontSize: "16px", cursor: "pointer", color: "#9CA3AF" }}>
+          <button onClick={loadData} style={{ padding: "10px 14px", backgroundColor: "#fff", border: "1.5px solid #E2E4DF", borderRadius: "10px", fontSize: "16px", cursor: "pointer", color: "#9CA3AF" }}>
             ↺
           </button>
         </div>
 
         {/* List + detail */}
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div style={{ backgroundColor: "#fff", borderRadius: "14px", padding: "48px", textAlign: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+            <p style={{ color: "#9CA3AF", fontSize: "14px", margin: 0 }}>Loading submissions…</p>
+          </div>
+        ) : filtered.length === 0 ? (
           <div style={{ backgroundColor: "#fff", borderRadius: "14px", padding: "48px", textAlign: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
             <p style={{ fontSize: "32px", marginBottom: "8px" }}>📭</p>
             <p style={{ color: "#9CA3AF", fontSize: "14px", margin: 0 }}>
-              {search ? "No results match your search." : "No submissions yet. Assessments completed on this device will appear here."}
+              {search ? "No results match your search." : "No submissions yet. Results from any device will appear here once someone completes an assessment."}
             </p>
           </div>
         ) : (
@@ -338,7 +370,7 @@ function AdminDashboard({ adminEmail, onLogout }) {
                       <p style={{ fontSize: "15px", fontWeight: "600", color: "#111827", margin: "0 0 2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.name}</p>
                       <p style={{ fontSize: "12px", color: "#9CA3AF", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.email}</p>
                       <p style={{ fontSize: "11px", color: "#C4C9C2", margin: "4px 0 0" }}>
-                        {new Date(s.id).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        {new Date(s.created_at).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
                     <div style={{ textAlign: "right", marginLeft: "12px", flexShrink: 0 }}>
@@ -401,7 +433,7 @@ function AdminDashboard({ adminEmail, onLogout }) {
                   </button>
 
                   <p style={{ fontSize: "11px", color: "#C4C9C2", margin: "12px 0 0", textAlign: "center" }}>
-                    Submitted {new Date(selected.id).toLocaleString("en-GB", { dateStyle: "full", timeStyle: "short" })}
+                    Submitted {new Date(selected.created_at).toLocaleString("en-GB", { dateStyle: "full", timeStyle: "short" })}
                   </p>
                 </div>
               </div>
@@ -457,7 +489,7 @@ export default function App() {
     setSubmitting(true);
     const r = calcResults();
     setResults(r);
-    saveSubmission({
+    await saveSubmission({
       name: participant.name, email: participant.email,
       date: new Date().toISOString(),
       avg: r.avg, total: r.total,
