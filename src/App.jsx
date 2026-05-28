@@ -576,22 +576,9 @@ export default function App() {
             <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "30px", fontWeight: "600", color: interpretation.color, margin: "0 0 4px" }}>
               {interpretation.label}
             </h2>
-            <p style={{ fontSize: "14px", color: "#6B7280", fontStyle: "italic", marginBottom: "20px" }}>
+            <p style={{ fontSize: "14px", color: "#6B7280", fontStyle: "italic", marginBottom: "0" }}>
               {interpretation.tagline}
             </p>
-            <div style={{ backgroundColor: "#fff", borderRadius: "12px", padding: "20px", textAlign: "left" }}>
-              <p style={{ fontSize: "14px", color: "#374151", lineHeight: "1.75", margin: "0 0 16px" }}>
-                {interpretation.description}
-              </p>
-              <div style={{ borderTop: "1px solid #E9ECE6", paddingTop: "14px" }}>
-                <p style={{ fontSize: "12px", fontWeight: "700", color: interpretation.accent, letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "6px" }}>
-                  💡 Recommendation
-                </p>
-                <p style={{ fontSize: "13px", color: "#6B7280", lineHeight: "1.7", margin: 0 }}>
-                  {interpretation.advice}
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* Breakdown */}
