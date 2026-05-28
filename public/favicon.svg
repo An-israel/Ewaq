@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <!-- Background -->
+  <rect width="120" height="120" rx="18" fill="#1B4332"/>
+
+  <!-- Sunburst rays from (60, 30) -->
+  <g stroke="#FAF0D0" stroke-width="3" stroke-linecap="round" opacity="0.9">
+    <line x1="60" y1="30" x2="16" y2="5"/>
+    <line x1="60" y1="30" x2="28" y2="2"/>
+    <line x1="60" y1="30" x2="40" y2="1"/>
+    <line x1="60" y1="30" x2="51" y2="1"/>
+    <line x1="60" y1="30" x2="60" y2="1"/>
+    <line x1="60" y1="30" x2="69" y2="1"/>
+    <line x1="60" y1="30" x2="80" y2="1"/>
+    <line x1="60" y1="30" x2="92" y2="2"/>
+    <line x1="60" y1="30" x2="104" y2="5"/>
+  </g>
+
+  <!-- P letter (left half) -->
+  <!-- Vertical bar -->
+  <rect x="12" y="30" width="9" height="72" rx="3" fill="#FAF0D0"/>
+  <!-- Top horizontal cap -->
+  <rect x="12" y="30" width="32" height="9" rx="3" fill="#FAF0D0"/>
+  <!-- Mid horizontal cap -->
+  <rect x="12" y="59" width="32" height="9" rx="3" fill="#FAF0D0"/>
+  <!-- P bowl (right curve) -->
+  <path d="M44 30 C62 30 62 68 44 68" fill="none" stroke="#FAF0D0" stroke-width="9" stroke-linecap="round"/>
+
+  <!-- D/O letter (right half) -->
+  <!-- Vertical bar -->
+  <rect x="67" y="30" width="9" height="72" rx="3" fill="#FAF0D0"/>
+  <!-- Top horizontal cap -->
+  <rect x="67" y="30" width="22" height="9" rx="3" fill="#FAF0D0"/>
+  <!-- Bottom horizontal cap -->
+  <rect x="67" y="93" width="22" height="9" rx="3" fill="#FAF0D0"/>
+  <!-- D bowl (right curve) -->
+  <path d="M89 30 C116 30 116 102 89 102" fill="none" stroke="#FAF0D0" stroke-width="9" stroke-linecap="round"/>
+</svg>
