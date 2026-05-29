@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 
   const payload = {
     from: "EWAQ Assessment <onboarding@resend.dev>",
-    to: ["ppobichukwu@gmail.com"],
+    to: ["thepeterobichukwu@gmail.com"],
     subject: `New Assessment — ${name} (${label})`,
     html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#f8f9f7;border-radius:12px;">
