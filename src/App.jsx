@@ -273,6 +273,27 @@ function AdminDashboard({ adminEmail, onLogout }) {
   );
 
   const labelColor = { Thriving: "#16A34A", Stable: "#2563EB", Struggling: "#D97706", Critical: "#DC2626" };
+  const [sending, setSending] = useState({});
+
+  async function sendToEmail(s, key) {
+    setSending(p => ({ ...p, [key]: "sending" }));
+    try {
+      const res = await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: s.name, email: s.email, avg: s.avg, label: s.label }),
+      });
+      setSending(p => ({ ...p, [key]: res.ok ? "sent" : "error" }));
+      setTimeout(() => setSending(p => ({ ...p, [key]: null })), 3000);
+    } catch {
+      setSending(p => ({ ...p, [key]: "error" }));
+      setTimeout(() => setSending(p => ({ ...p, [key]: null })), 3000);
+    }
+  }
+
+  async function sendAll() {
+    for (const s of filtered) await sendToEmail(s, "all_" + s.id);
+  }
 
   function copyText(text, key) {
     navigator.clipboard.writeText(text).then(() => {
@@ -335,6 +356,9 @@ function AdminDashboard({ adminEmail, onLogout }) {
           <button onClick={copyAllEmails} style={{ padding: "10px 18px", backgroundColor: "#fff", border: "1.5px solid #E2E4DF", borderRadius: "10px", fontSize: "13px", fontWeight: "500", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", color: "#374151", whiteSpace: "nowrap" }}>
             {copied === "all" ? "✓ Copied!" : `Copy All Emails (${filtered.length})`}
           </button>
+          <button onClick={sendAll} style={{ padding: "10px 18px", backgroundColor: "#1B4332", border: "none", borderRadius: "10px", fontSize: "13px", fontWeight: "600", cursor: "pointer", fontFamily: "'DM Sans', sans-serif", color: "#fff", whiteSpace: "nowrap" }}>
+            📧 Send All to Email
+          </button>
           <button onClick={loadData} style={{ padding: "10px 14px", backgroundColor: "#fff", border: "1.5px solid #E2E4DF", borderRadius: "10px", fontSize: "16px", cursor: "pointer", color: "#9CA3AF" }}>
             ↺
           </button>
@@ -387,6 +411,11 @@ function AdminDashboard({ adminEmail, onLogout }) {
                       onClick={e => { e.stopPropagation(); copyText(s.email, s.id); }}
                       style={{ fontSize: "11px", padding: "4px 10px", borderRadius: "6px", border: "1px solid #E2E4DF", background: "#FAFAF9", cursor: "pointer", color: copied === s.id ? "#16A34A" : "#6B7280", fontFamily: "'DM Sans', sans-serif" }}>
                       {copied === s.id ? "✓ Copied" : "Copy email"}
+                    </button>
+                    <button
+                      onClick={e => { e.stopPropagation(); sendToEmail(s, s.id + "_r"); }}
+                      style={{ fontSize: "11px", padding: "4px 10px", borderRadius: "6px", border: "1px solid #1B433230", background: sending[s.id + "_r"] === "sent" ? "#F0FDF4" : sending[s.id + "_r"] === "error" ? "#FEF2F2" : "#F0FDF4", cursor: "pointer", color: sending[s.id + "_r"] === "error" ? "#DC2626" : "#16A34A", fontFamily: "'DM Sans', sans-serif", fontWeight: "600" }}>
+                      {sending[s.id + "_r"] === "sending" ? "Sending…" : sending[s.id + "_r"] === "sent" ? "✓ Sent" : sending[s.id + "_r"] === "error" ? "✗ Failed" : "📧 Send"}
                     </button>
                     <span style={{ fontSize: "11px", padding: "4px 10px", borderRadius: "6px", backgroundColor: (labelColor[s.label] || "#374151") + "15", color: labelColor[s.label] || "#374151", fontWeight: "600" }}>
                       A:{s.sA} B:{s.sB} C:{s.sC}
