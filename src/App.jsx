@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "./lib/supabase";
-import emailjs from "@emailjs/browser";
 
 // ─── Admin credentials ────────────────────────────────────────────────────────
 const ADMIN_USERS = {
@@ -8,13 +7,6 @@ const ADMIN_USERS = {
   "ideallifecitymedia@gmail.com": "ILC@Admin2026",
   "ppobichukwu@gmail.com":        "PO@Admin2026",
 };
-
-// ─── EmailJS config — fill in after setting up at emailjs.com ─────────────────
-const NOTIFY_EMAIL    = "ppobichukwu@gmail.com";
-const EMAILJS_KEY     = "YOUR_PUBLIC_KEY";
-const EMAILJS_SERVICE = "YOUR_SERVICE_ID";
-const EMAILJS_TMPL    = "YOUR_TEMPLATE_ID";
-const EMAIL_ENABLED   = false; // flip to true once keys are filled in above
 
 async function saveSubmission(data) {
   const { error } = await supabase.from("submissions").insert({
@@ -507,22 +499,16 @@ export default function App() {
       reflection: reflection || "",
     });
 
-    if (EMAIL_ENABLED) {
-      emailjs.init(EMAILJS_KEY);
-      emailjs.send(EMAILJS_SERVICE, EMAILJS_TMPL, {
-        to_email:          NOTIFY_EMAIL,
-        participant_name:  participant.name,
-        participant_email: participant.email,
-        avg_score:         r.avg,
-        score_label:       r.interpretation.label,
-        total_score:       r.total,
-        section_a:         r.sA,
-        section_b:         r.sB,
-        section_c:         r.sC,
-        reflection:        reflection || "Not provided",
-        submitted_at:      new Date().toLocaleString("en-GB", { dateStyle: "full", timeStyle: "short" }),
-      }).catch(e => console.error("EmailJS error:", e));
-    }
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name:  participant.name,
+        email: participant.email,
+        avg:   r.avg,
+        label: r.interpretation.label,
+      }),
+    }).catch(e => console.error("Notify error:", e));
 
     setSubmitting(false);
     setStep(5);
