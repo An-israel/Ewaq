@@ -5,6 +5,7 @@ import { supabase } from "./lib/supabase";
 const ADMIN_USERS = {
   "aniekaneazy@gmail.com":        "LTL@Admin2026",
   "ideallifecitymedia@gmail.com": "ILC@Admin2026",
+  "ppobichukwu@gmail.com":        "PO@Admin2026",
 };
 
 async function saveSubmission(data) {
@@ -497,6 +498,18 @@ export default function App() {
       label: r.interpretation.label,
       reflection: reflection || "",
     });
+
+    fetch("/api/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name:  participant.name,
+        email: participant.email,
+        avg:   r.avg,
+        label: r.interpretation.label,
+      }),
+    }).catch(e => console.error("Notify error:", e));
+
     setSubmitting(false);
     setStep(5);
   };
